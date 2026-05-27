@@ -1,5 +1,6 @@
 max_findings_per_audit: 8
 neighbor_set_cap: 30
+max_prs_per_run: 20
 
 inbox_path: notes/inbox.md
 

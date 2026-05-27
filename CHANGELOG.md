@@ -4,6 +4,26 @@ All notable changes to the Auditor agent.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/). Consuming repos pin a tag (e.g. `v0.1.0`) to lock behaviour.
 
+## [0.2.0] — 2026-05-27
+
+Schedule-mode default. Auditor now defaults to running once nightly across all open PRs in batch, instead of firing on every PR event. The per-PR mode is still supported for hosts that prefer per-PR latency.
+
+### Why
+
+Per-PR auditing was a blocker in practice: the auditor-bot commit-back to PR branches created rebase friction, the on-every-push timing slowed PR cycles, and the per-PR API cost scaled with team activity instead of being bounded by the night. Coherence + tidiness aren't critical-path-blockers; they're hygiene findings that suit a nightshift cadence.
+
+### Added
+- **Two-mode support** detected from the runtime envelope: PR mode (`PR_NUMBER` set) keeps the existing single-PR behaviour; schedule mode (`PR_NUMBER` unset) enumerates open PRs via `gh pr list` and audits each.
+- `max_prs_per_run` config field (default 20) — cap on PRs audited per scheduled run.
+- `GH_TOKEN` documented as a required envelope var (was implicit before).
+
+### Changed
+- `AGENT.md` updated: "Two modes" section, new envelope table distinguishing PR-only vs both-mode variables.
+- `PROMPT.md` rewritten with the §0 enumeration step for schedule mode. Sections 1–5 are mode-agnostic. The schedule-mode loop wraps §1–§5 per open PR; each PR's block is located/replaced/prepended independently in §5.
+
+### Requires
+- [Moirai](https://github.com/derrybirkett/moirai) ≥ `v0.3.0` — added support for the `schedule` + `inbox` trigger/sink combo (commit-back to workflow ref instead of PR head ref).
+
 ## [0.1.0] — 2026-05-27
 
 Initial extraction from [`monospace.studio/.github/agents/auditor`](https://github.com/derrybirkett/monospace.studio/tree/main/.github/agents/auditor) into its own repo. Step 4 of the [Moirai](https://github.com/derrybirkett/moirai) walking-skeleton plan — the second agent extracted, validating that the protocol accommodates more than one.
