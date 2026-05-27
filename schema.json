@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/derrybirkett/auditor/schema.json",
+  "title": "Auditor agent config",
+  "description": "Configuration shape for the auditor agent. Consuming repos place this file at .github/agents/auditor/config.yml. Unset fields fall back to defaults.yml.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "max_findings_per_audit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "description": "Hard cap on findings written per PR audit. Extras are dropped (highest-impact kept)."
+    },
+    "neighbor_set_cap": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "Max files in the neighbour set (files referencing identifiers from the diff)."
+    },
+    "inbox_path": {
+      "type": "string",
+      "description": "Path (relative to repo root) of the markdown file that receives the audit block. Default: notes/inbox.md."
+    },
+    "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Per-category enablement.",
+      "properties": {
+        "link_integrity":  { "type": "boolean" },
+        "orphans":         { "type": "boolean" },
+        "ia_drift":        { "type": "boolean" },
+        "copy_drift":      { "type": "boolean" },
+        "metadata":        { "type": "boolean" },
+        "component_drift": { "type": "boolean" }
+      }
+    },
+    "scan_paths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Paths the auditor considers in-scope when building the diff and neighbour sets."
+    },
+    "skip_paths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "If the diff only touches these paths, audit exits with a minimal 'no audit-relevant changes' block."
+    }
+  }
+}

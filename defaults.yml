@@ -1,0 +1,26 @@
+max_findings_per_audit: 8
+neighbor_set_cap: 30
+
+inbox_path: notes/inbox.md
+
+categories:
+  link_integrity: true
+  orphans: true
+  ia_drift: true
+  copy_drift: true
+  metadata: true
+  component_drift: true
+
+scan_paths:
+  - content/
+  - app/
+  - components/
+  - lib/
+  - public/
+  - docs/
+
+skip_paths:
+  - node_modules/
+  - .next/
+  - pnpm-lock.yaml
+  - notes/inbox.md
