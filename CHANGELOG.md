@@ -4,6 +4,41 @@ All notable changes to the Auditor agent.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/). Consuming repos pin a tag (e.g. `v0.1.0`) to lock behaviour.
 
+## [0.3.0] — 2026-05-28
+
+Sink change: findings now go to **GitHub Issues** instead of the consuming repo's inbox file. Driven by a real bug surfaced 2026-05-27: the nightly auditor's commit to `notes/inbox.md` on main caused a merge conflict that blocked an unrelated PR merge. More fundamentally, `inbox.md` is the local developer's session context — agent-generated findings belong in the triage queue (where Curator's already are), not injected into the developer's inbox.
+
+### Why
+
+Auditor's findings are agent-triage items with the same lifecycle as Curator's: a developer should see them in `gh issue list`, close them with `wontfix` if not worth doing, or address and close them. They are NOT session-pickup context. Filing as issues:
+
+- Eliminates merge-conflict-on-main risk entirely (Issues API doesn't touch files).
+- Unifies the triage queue across both agents — one query (`gh issue list --label cleanup`) shows everything.
+- Lets `auditor:wontfix` teach the agent permanently per-file, same as `curator:wontfix`.
+- Surfaces findings via PR conversation (issues link to PRs naturally) without auditor-bot pushing commits.
+
+### Changed
+- **`PROMPT.md` §5 rewritten.** "Write to the inbox file" replaced with "File GitHub issues." Adds Curator-style dedup against existing open issues with title prefix `[auditor] <category>:`, dedup window for recently-closed issues, and `auditor:wontfix` permanent skip.
+- **`AGENT.md`** updated: trust level reframed (issue filing only), allowed_tools narrowed from `Bash,Read,Edit,Write,Grep,Glob` to `Bash,Read,Grep,Glob` (no file editing needed).
+- **`schema.json`**: `inbox_path` removed; `dedup_window_days`, `labels.base`, `labels.per_category` added. `max_findings_per_audit` renamed to `max_findings_per_pr` for clarity.
+- **`defaults.yml`**: matches schema. Default labels: `auditor`, `cleanup`, plus per-category `auditor:<category>`. Default `dedup_window_days: 30`.
+
+### Removed
+- `inbox_path` config field. The agent no longer touches any file in the consuming repo.
+
+### Requires
+- Moirai ≥ `v0.3.1` — registry default for `auditor.default_sink` flips from `inbox` to `issues`. (Adapter template unchanged; `issues` sink was already supported via Curator.)
+
+### Migration for existing consumers
+
+After bumping `.agents/auditor` to `v0.3.0` and `.moirai` to `v0.3.1`:
+
+```bash
+.moirai/bin/install auditor --sink issues --force
+```
+
+This regenerates the workflow with `issues: write` permission (instead of `contents: write`) and drops the inbox commit-back step. Past audit blocks in `notes/inbox.md` stay (they're already merged into history); the agent simply stops adding to them.
+
 ## [0.2.0] — 2026-05-27
 
 Schedule-mode default. Auditor now defaults to running once nightly across all open PRs in batch, instead of firing on every PR event. The per-PR mode is still supported for hosts that prefer per-PR latency.

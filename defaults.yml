@@ -1,8 +1,7 @@
-max_findings_per_audit: 8
+max_findings_per_pr: 8
 neighbor_set_cap: 30
 max_prs_per_run: 20
-
-inbox_path: notes/inbox.md
+dedup_window_days: 30
 
 categories:
   link_integrity: true
@@ -24,4 +23,15 @@ skip_paths:
   - node_modules/
   - .next/
   - pnpm-lock.yaml
-  - notes/inbox.md
+
+labels:
+  base:
+    - auditor
+    - cleanup
+  per_category:
+    link_integrity:  auditor:link-integrity
+    orphans:         auditor:orphans
+    ia_drift:        auditor:ia-drift
+    copy_drift:      auditor:copy-drift
+    metadata:        auditor:metadata
+    component_drift: auditor:component-drift

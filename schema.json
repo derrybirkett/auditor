@@ -6,11 +6,11 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "max_findings_per_audit": {
+    "max_findings_per_pr": {
       "type": "integer",
       "minimum": 1,
       "maximum": 30,
-      "description": "Hard cap on findings written per PR audit. Extras are dropped (highest-impact kept)."
+      "description": "Hard cap on issues filed per PR audit. Extras are dropped (highest-impact kept)."
     },
     "neighbor_set_cap": {
       "type": "integer",
@@ -24,9 +24,10 @@
       "maximum": 100,
       "description": "Schedule mode only: cap on how many open PRs to audit per run. Most recently updated PRs are kept if the cap is hit."
     },
-    "inbox_path": {
-      "type": "string",
-      "description": "Path (relative to repo root) of the markdown file that receives the audit block. Default: notes/inbox.md."
+    "dedup_window_days": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Skip filing if a matching [auditor] issue was closed within this many days."
     },
     "categories": {
       "type": "object",
@@ -49,7 +50,24 @@
     "skip_paths": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "If the diff only touches these paths, audit exits with a minimal 'no audit-relevant changes' block."
+      "description": "If the diff only touches these paths, audit exits without filing anything for that PR."
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "GitHub labels applied to filed issues.",
+      "properties": {
+        "base": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Labels applied to every issue."
+        },
+        "per_category": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Per-category label overrides keyed by category name."
+        }
+      }
     }
   }
 }
